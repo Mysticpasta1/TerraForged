@@ -1,0 +1,16 @@
+[
+  {
+    "modid": "terraforged",
+    "name": "TerraForged",
+    "description": "A terrain generator attempting to create more immersive, inspiring worlds to explore and build in!",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "",
+    "updateUrl": "",
+    "authorList": ["Dags", "Mysticpasta1"],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]

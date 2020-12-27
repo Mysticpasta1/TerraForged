@@ -1,21 +1,24 @@
 buildscript {
     repositories {
         jcenter()
-        mavenCentral()
-        maven { url "https://files.minecraftforge.net/maven" }
+        maven { url = "https://files.minecraftforge.net/maven" }
     }
     dependencies {
-        classpath group: "net.minecraftforge.gradle", name: "ForgeGradle", version: "3.+", changing: true
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
     }
 }
-
-apply plugin: "net.minecraftforge.gradle"
+apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: "maven-publish"
 apply plugin: "eclipse"
 
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = targetCompatibility = '1.8'
+compileJava {
+    sourceCompatibility = targetCompatibility = '1.8'
+}
+
+version = "${mcforge_version}-${mod_version}${getClassifier()}"
 group = "com.terraforged"
-version = "${mc_version}-${mod_version}${getClassifier()}"
+archivesBaseName = "terraforged"
 
 allprojects {
     apply plugin: "java"
@@ -33,59 +36,15 @@ repositories {
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
     lib(project(":FeatureManager")) { transitive false }
 //    lib(project(":Engine"))
     lib "com.terraforged:Engine:0.1.0"
 }
 
 minecraft {
-    mappings channel: mcp_channel, version: mcp_version
-    runs {
-        client {
-            workingDirectory project.file("run/client")
-            property "forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP"
-            property "forge.logging.console.level", "debug"
-            jvmArgs "-Xmx8G", "-Xms6G", "-Ddev"
-            mods {
-                terraforged {
-                    source sourceSets.main
-                }
-            }
-        }
-        server {
-            workingDirectory project.file("run/server")
-            property "forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP"
-            property "forge.logging.console.level", "debug"
-            jvmArgs "-Xmx8G", "-Xms6G", "-Ddev"
-            mods {
-                terraforged {
-                    source sourceSets.main
-                }
-            }
-        }
-        data {
-            workingDirectory project.file("run/data")
-            property "forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP"
-            property "forge.logging.console.level", "debug"
-            property "fml.earlyprogresswindow", "false"
-            args "--mod", "terraforged", "--server", "--output", file("generated/resources/")
-            jvmArgs "-Xmx4G", "-Xms2G"
-            mods {
-                terraforged {
-                    source sourceSets.main
-                }
-            }
-        }
-    }
-}
-
-sourceSets {
-    // add resources for the runData task to path
-    main.resources {
-        srcDirs += "generated/resources/"
-        exclude ".cache"
-    }
+    mappings = mcp_channel_with_version
+    runDir = "run"
+    version = mcforge_version
 }
 
 task collectLibs(type: Copy) {
@@ -104,9 +63,15 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 }
 
 processResources {
-    filesMatching("**/mods.toml") {
-        // replaces the version string in the mods.toml
-        expand("version": "${mod_version}${getBuildNumber()}", "mc_version": mc_version)
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+
+        expand "version": "${mod_version}${getBuildNumber()}", "mc_version": mcforge_version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
     }
 }
 
